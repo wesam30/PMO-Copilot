@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="PMO Copilot employee registration portal">
+  <title>Employee Registration Portal | PMO Copilot</title>
+  <style>
+    :root { --navy:#0b2545; --navy-deep:#061a33; --burgundy:#7b1e3a; --gold:#d4a017; --ink:#172b44; --muted:#64748b; --line:#dce3eb; --soft:#f5f7fa; --white:#fff; --danger:#b42318; --success:#147a52; --radius:12px; }
+    * { box-sizing:border-box; }
+    html { min-width:320px; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:var(--soft); font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif; font-size:15px; line-height:1.45; }
+    button, input, select { font:inherit; }
+    button { cursor:pointer; }
+    .page { display:grid; grid-template-columns:minmax(280px, 25%) 1fr; min-height:100vh; }
+    .brand-panel { position:relative; overflow:hidden; padding:38px clamp(28px, 3vw, 52px); color:#fff; background:linear-gradient(155deg, var(--navy) 0%, var(--navy-deep) 90%); }
+    .brand-panel::after { content:""; position:absolute; width:380px; height:380px; top:-155px; right:-225px; border:1px solid rgba(212,160,23,.25); border-radius:50%; box-shadow:0 0 0 45px rgba(255,255,255,.025), 0 0 0 90px rgba(255,255,255,.018); }
+    .brand { position:relative; z-index:1; display:flex; align-items:center; gap:11px; font-size:20px; font-weight:750; letter-spacing:-.02em; }
+    .brand-mark { display:grid; place-items:center; width:34px; height:34px; color:var(--navy); background:var(--gold); border-radius:9px; box-shadow:0 5px 14px rgba(0,0,0,.22); }
+    .brand-mark svg { width:21px; height:21px; }
+    .eyebrow { margin:4px 0 0 45px; color:#b8c6d8; font-size:10px; font-weight:650; letter-spacing:.08em; text-transform:uppercase; }
+    .intro { position:relative; z-index:1; margin-top:72px; }
+    .intro h1 { max-width:300px; margin:0; font-size:clamp(30px, 2.55vw, 42px); line-height:1.13; letter-spacing:-.04em; }
+    .intro > p { max-width:330px; margin:18px 0 28px; color:#c4d0df; font-size:15px; }
+    .features { display:grid; gap:10px; }
+    .feature { display:flex; gap:12px; align-items:flex-start; padding:13px; border:1px solid rgba(255,255,255,.1); border-radius:11px; background:rgba(255,255,255,.055); backdrop-filter:blur(5px); }
+    .feature-icon { display:grid; flex:0 0 auto; place-items:center; width:31px; height:31px; color:var(--gold); border-radius:8px; background:rgba(212,160,23,.12); }
+    .feature svg { width:17px; height:17px; }
+    .feature strong { display:block; margin-top:1px; font-size:13px; }
+    .feature span { display:block; margin-top:2px; color:#b8c6d8; font-size:11px; line-height:1.35; }
+    .illustration { position:relative; z-index:1; width:min(100%, 310px); margin:clamp(32px, 8vh, 92px) auto 0; }
+    .illustration svg { display:block; width:100%; height:auto; filter:drop-shadow(0 18px 15px rgba(0,0,0,.2)); }
+    .form-area { display:flex; justify-content:center; padding:42px clamp(24px, 6vw, 104px); background:linear-gradient(135deg, #f8fafc, #f4f6f9); }
+    .form-shell { width:min(100%, 960px); }
+    .form-header { margin:3px 0 25px; }
+    .form-header .portal-label { display:flex; align-items:center; gap:8px; margin-bottom:8px; color:var(--burgundy); font-size:12px; font-weight:750; letter-spacing:.07em; text-transform:uppercase; }
+    .portal-label::before { width:18px; height:2px; background:var(--gold); content:""; }
+    .form-header h2 { margin:0; font-size:clamp(27px, 3vw, 36px); letter-spacing:-.04em; line-height:1.15; }
+    .form-header p { margin:9px 0 0; color:var(--muted); }
+    .form-card { padding:clamp(24px, 4vw, 42px); border:1px solid #e5eaf0; border-radius:16px; background:var(--white); box-shadow:0 18px 45px rgba(22,43,69,.08); }
+    .form-section + .form-section { margin-top:30px; padding-top:28px; border-top:1px solid #e8edf2; }
+    .section-heading { display:flex; align-items:center; gap:10px; margin:0 0 19px; color:var(--navy); font-size:17px; font-weight:750; letter-spacing:-.01em; }
+    .section-heading svg { width:19px; height:19px; color:var(--burgundy); }
+    .section-heading small { margin-left:auto; color:var(--muted); font-size:12px; font-weight:500; letter-spacing:0; }
+    .grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:18px 20px; }
+    .field { min-width:0; }
+    label { display:block; margin:0 0 7px; color:#31455e; font-size:13px; font-weight:680; }
+    .required { margin-left:2px; color:var(--gold); font-weight:800; }
+    .input-wrap { position:relative; }
+    .input-icon { position:absolute; top:50%; left:14px; width:18px; height:18px; color:#718096; transform:translateY(-50%); pointer-events:none; transition:color .18s; }
+    input, select { width:100%; height:48px; padding:0 14px; color:var(--ink); border:1px solid var(--line); border-radius:9px; outline:0; background:#fff; transition:border-color .18s, box-shadow .18s, background .18s; }
+    .with-icon { padding-left:43px; }
+    select { appearance:none; padding-right:42px; background-image:linear-gradient(45deg, transparent 50%, #6c7b8d 50%),linear-gradient(135deg, #6c7b8d 50%, transparent 50%); background-position:calc(100% - 19px) 20px,calc(100% - 14px) 20px; background-size:5px 5px,5px 5px; background-repeat:no-repeat; }
+    input::placeholder { color:#9aa7b6; }
+    input:hover, select:hover { border-color:#aebccb; }
+    input:focus, select:focus { border-color:var(--burgundy); box-shadow:0 0 0 3px rgba(123,30,58,.12); }
+    .field:focus-within .input-icon { color:var(--burgundy); }
+    .field.invalid input, .field.invalid select { border-color:var(--danger); background:#fffafa; }
+    .error { min-height:18px; margin:5px 0 0; color:var(--danger); font-size:11px; }
+    .project-list { display:grid; gap:15px; }
+    .project-field { animation:reveal .28s ease both; }
+    @keyframes reveal { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    .projects-note { display:flex; align-items:center; gap:7px; margin:-4px 0 15px; color:var(--muted); font-size:12px; }
+    .projects-note svg { width:15px; height:15px; color:var(--gold); }
+    .submit { width:100%; min-height:52px; margin-top:32px; color:#fff; border:0; border-radius:9px; background:var(--navy); font-weight:730; box-shadow:0 8px 16px rgba(11,37,69,.18); transition:transform .18s, background .18s, box-shadow .18s; }
+    .submit:hover:not(:disabled) { background:#133967; transform:translateY(-1px); box-shadow:0 11px 20px rgba(11,37,69,.24); }
+    .submit:active:not(:disabled) { transform:translateY(0); }
+    .submit:focus-visible { outline:3px solid rgba(212,160,23,.7); outline-offset:3px; }
+    .submit:disabled { cursor:wait; opacity:.82; }
+    .submission-error { display:none; margin:14px 0 0; padding:11px 13px; color:var(--danger); border:1px solid rgba(180,35,24,.22); border-radius:8px; background:#fff7f6; font-size:13px; }
+    .submission-error.visible { display:block; animation:reveal .22s ease; }
+    .spinner { display:inline-block; width:15px; height:15px; margin-right:8px; vertical-align:-2px; border:2px solid rgba(255,255,255,.45); border-top-color:#fff; border-radius:50%; animation:spin .75s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .form-note { margin:14px 0 0; color:var(--muted); font-size:12px; text-align:center; }
+    .success { display:none; padding:50px 24px; text-align:center; }
+    .success.visible { display:block; animation:reveal .35s ease; }
+    .success-icon { display:grid; place-items:center; width:62px; height:62px; margin:0 auto 20px; color:#fff; border-radius:50%; background:var(--success); box-shadow:0 9px 22px rgba(20,122,82,.24); }
+    .success-icon svg { width:32px; height:32px; }
+    .success h3 { margin:0; color:var(--navy); font-size:25px; letter-spacing:-.03em; }
+    .success p { max-width:440px; margin:11px auto 25px; color:var(--muted); }
+    .new-registration { padding:11px 18px; color:var(--navy); border:1px solid #b8c4d1; border-radius:8px; background:#fff; font-weight:700; }
+    .new-registration:hover { border-color:var(--navy); background:#f7f9fc; }
+    [hidden] { display:none !important; }
+    @media (max-width:900px) { .page { grid-template-columns:1fr; } .brand-panel { min-height:auto; padding-bottom:32px; } .intro { margin-top:42px; } .illustration { display:none; } .form-area { padding-top:38px; } }
+    @media (max-width:560px) { .brand-panel { padding:26px 22px; } .intro { margin-top:34px; } .intro h1 { font-size:29px; } .features { grid-template-columns:1fr; } .form-area { padding:28px 16px; } .form-card { padding:23px 18px; border-radius:12px; } .grid { grid-template-columns:1fr; gap:14px; } .form-section + .form-section { margin-top:25px; padding-top:24px; } .section-heading small { display:none; } }
+    @media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <aside class="brand-panel" aria-label="About PMO Copilot">
+      <div class="brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 18V8l8-4 8 4v10l-8 4-8-4Z"/><path d="m8 10 4 2 4-2m-4 2v5"/></svg></span>PMO Copilot</div>
+      <p class="eyebrow">AI-Powered Project Management Office</p>
+      <section class="intro"><h1>Welcome to PMO Copilot</h1><p>Register once to streamline project communications, intelligent reminders, reporting, and AI-powered PMO workflows.</p>
+        <div class="features">
+          <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><div><strong>Automated Project Updates</strong><span>Timely prompts and streamlined reporting.</span></div></div>
+          <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4.5 6v5c0 5 3.2 8.5 7.5 10 4.3-1.5 7.5-5 7.5-10V6L12 3Z"/><path d="m9 12 2 2 4-4"/></svg></span><div><strong>Secure Employee Records</strong><span>Trusted information for PMO operations.</span></div></div>
+          <div class="feature"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg></span><div><strong>Portfolio Visibility</strong><span>Reliable insight across your project portfolio.</span></div></div>
+        </div>
+      </section>
+      <div class="illustration" aria-hidden="true"><svg viewBox="0 0 360 180" fill="none"><path d="M37 144 167 74l155 46-133 48L37 144Z" fill="#12365f"/><path d="m167 74 155 46v22l-133 26v-25L37 119v25l152 24v-25" fill="#0a203d"/><rect x="90" y="46" width="143" height="88" rx="8" fill="#f6f8fa"/><rect x="101" y="58" width="57" height="6" rx="3" fill="#c3ced9"/><rect x="101" y="75" width="38" height="43" rx="4" fill="#e8edf2"/><path d="M108 106l8-11 7 6 10-16" stroke="#7b1e3a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><rect x="148" y="75" width="74" height="10" rx="4" fill="#dbe3ec"/><rect x="148" y="94" width="55" height="7" rx="3.5" fill="#dbe3ec"/><rect x="148" y="109" width="64" height="7" rx="3.5" fill="#dbe3ec"/><circle cx="254" cy="57" r="24" fill="#d4a017"/><path d="M247 57h14m-7-7v14" stroke="#0b2545" stroke-width="3" stroke-linecap="round"/><path d="M69 126h62" stroke="#d4a017" stroke-width="3" stroke-linecap="round"/></svg></div>
+    </aside>
+    <section class="form-area" aria-labelledby="page-title"><div class="form-shell">
+      <header class="form-header"><div class="portal-label">Employee onboarding</div><h2 id="page-title">Employee Registration Portal</h2><p>Complete your details to get connected to your PMO project workflows.</p></header>
+      <div class="form-card">
+        <form id="registration-form" novalidate>
+          <section class="form-section" aria-labelledby="personal-title"><h3 class="section-heading" id="personal-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"/></svg>Personal Information<small>Fields marked <span class="required">*</span> are required</small></h3>
+            <div class="grid">
+              <div class="field"><label for="name">Employee Name <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c.7-4 3.3-6 8-6s7.3 2 8 6"/></svg><input class="with-icon" id="name" name="name" type="text" autocomplete="name" placeholder="Enter your full name" required></div><p class="error" id="name-error"></p></div>
+              <div class="field"><label for="email">Email Address <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v14H4z"/><path d="m4 7 8 6 8-6"/></svg><input class="with-icon" id="email" name="email" type="email" autocomplete="email" placeholder="name@company.com" required></div><p class="error" id="email-error"></p></div>
+              <div class="field"><label for="mobile">Mobile Number <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><input class="with-icon" id="mobile" name="mobile" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. +20 100 000 0000" required></div><p class="error" id="mobile-error"></p></div>
+              <div class="field"><label for="whatsapp">WhatsApp Number <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.6-4.1A8 8 0 1 1 20 11.5Z"/><path d="M9 8.5c.2 2 2.3 4.1 4.5 4.5l1.2-1.2 1.8.7c.2.1.3.4.2.6-.3.8-1 1.3-1.8 1.3-3.1 0-6.1-3-6.1-6.1 0-.8.5-1.5 1.3-1.8.2-.1.5 0 .6.2l.7 1.8L10.2 10"/></svg><input class="with-icon" id="whatsapp" name="whatsapp" type="tel" inputmode="tel" placeholder="e.g. +20 100 000 0000" required></div><p class="error" id="whatsapp-error"></p></div>
+            </div></section>
+          <section class="form-section" aria-labelledby="professional-title"><h3 class="section-heading" id="professional-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m-13 5h18M10 12v2h4v-2"/></svg>Professional Information</h3>
+            <div class="grid"><div class="field"><label for="job-title">Job Title <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg><input class="with-icon" id="job-title" name="jobTitle" type="text" autocomplete="organization-title" placeholder="e.g. Project Manager" required></div><p class="error" id="job-title-error"></p></div>
+            <div class="field"><label for="employment-start-date">Employment Start Date <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><input class="with-icon" id="employment-start-date" name="employmentStartDate" type="date" required></div><p class="error" id="employment-start-date-error"></p></div>
+            <div class="field"><label for="project-count">Number of Projects <span class="required">*</span></label><select id="project-count" name="projectCount" required aria-describedby="project-count-error"></select><p class="error" id="project-count-error"></p></div></div>
+          </section>
+          <section class="form-section" aria-labelledby="projects-title"><h3 class="section-heading" id="projects-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z"/></svg>Project Information</h3><p class="projects-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 11v5m0-8h.01"/></svg>Project fields update automatically when you change the project count.</p><div class="project-list" id="project-list"></div></section>
+          <button class="submit" id="submit-button" type="submit">Register Employee</button><p class="submission-error" id="submission-error" role="alert"></p><p class="form-note">Your details will be used only for PMO communications and reporting workflows.</p>
+        </form>
+        <section class="success" id="success-message" aria-live="polite" tabindex="-1"><div class="success-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 4 4L19 6"/></svg></div><h3>Employee Registered Successfully</h3><p id="success-copy">Your employee information has been submitted successfully. You are now ready to receive PMO project communications.</p><p id="employee-id" hidden></p><button class="new-registration" id="new-registration" type="button">Register another employee</button></section>
+      </div>
+    </div></section>
+  </main>
+  <script>
+    (() => {
+      'use strict';
+      const WEBHOOK_URL = 'http://localhost:5678/webhook-test/employee-registration';
+      const form = document.querySelector('#registration-form');
+      const count = document.querySelector('#project-count');
+      const projectList = document.querySelector('#project-list');
+      const submitButton = document.querySelector('#submit-button');
+      const success = document.querySelector('#success-message');
+      const submissionError = document.querySelector('#submission-error');
+      const employeeId = document.querySelector('#employee-id');
+      const successCopy = document.querySelector('#success-copy');
+      const phonePattern = /^\+?[0-9][0-9\s().-]{6,18}[0-9]$/;
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      for (let value = 1; value <= 20; value += 1) count.add(new Option(value, value, value === 1, value === 1));
+      function setFieldError(input, message) { const field = input.closest('.field'); const error = document.querySelector(`#${input.id}-error`); field.classList.toggle('invalid', Boolean(message)); input.setAttribute('aria-invalid', Boolean(message)); if (error) error.textContent = message; }
+      function validateInput(input) { const value = input.value.trim(); let message = ''; if (!value) message = 'This field is required.'; else if (input.type === 'email' && !emailPattern.test(value)) message = 'Enter a valid email address.'; else if ((input.id === 'mobile' || input.id === 'whatsapp') && !phonePattern.test(value)) message = 'Enter a valid phone number.'; setFieldError(input, message); return !message; }
+      function createProjects() { const previous = [...projectList.querySelectorAll('input')].map(input => input.value); const total = Number(count.value); projectList.innerHTML = ''; for (let i = 1; i <= total; i += 1) { const field = document.createElement('div'); field.className = 'field project-field'; field.innerHTML = `<label for="project-${i}">Project Name ${i} <span class="required">*</span></label><div class="input-wrap"><svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6Z"/></svg><input class="with-icon" id="project-${i}" name="project-${i}" type="text" placeholder="Enter project name" required value="${escapeHtml(previous[i - 1] || '')}"></div><p class="error" id="project-${i}-error"></p>`; projectList.append(field); } }
+      function escapeHtml(value) { const node = document.createElement('span'); node.textContent = value; return node.innerHTML; }
+      function showSubmissionError(message) { submissionError.textContent = message; submissionError.classList.add('visible'); }
+      function resetView() { form.reset(); count.value = '1'; document.querySelectorAll('.field').forEach(field => field.classList.remove('invalid')); document.querySelectorAll('.error').forEach(error => error.textContent = ''); submissionError.textContent = ''; submissionError.classList.remove('visible'); successCopy.textContent = 'Your employee information has been submitted successfully. You are now ready to receive PMO project communications.'; employeeId.textContent = ''; employeeId.hidden = true; createProjects(); success.classList.remove('visible'); form.hidden = false; document.querySelector('#name').focus(); }
+      count.addEventListener('change', createProjects);
+      form.addEventListener('input', event => { if (event.target.matches('input')) validateInput(event.target); });
+      form.addEventListener('submit', async event => { event.preventDefault(); submissionError.textContent = ''; submissionError.classList.remove('visible'); const fields = [...form.querySelectorAll('input[required], select[required]')]; const valid = fields.map(validateInput).every(Boolean); if (!valid) { form.querySelector('.invalid input, .invalid select').focus(); return; } const payload = { employeeName: document.querySelector('#name').value.trim(), email: document.querySelector('#email').value.trim(), mobile: document.querySelector('#mobile').value.trim(), whatsapp: document.querySelector('#whatsapp').value.trim(), jobTitle: document.querySelector('#job-title').value.trim(), employmentStartDate: document.querySelector('#employment-start-date').value, projects: [...projectList.querySelectorAll('input')].map(input => ({ projectName: input.value.trim() })) }; submitButton.disabled = true; submitButton.innerHTML = '<span class="spinner"></span>Registering...'; try { const response = await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); let responseData = {}; try { responseData = await response.json(); } catch (_) { /* The webhook returned no JSON body. */ } if (!response.ok) throw new Error(responseData.message || responseData.error || `Request failed with status ${response.status}`); if (responseData.success !== true) { showSubmissionError(responseData.message || responseData.error || 'We could not submit your registration. Please try again.'); return; } successCopy.textContent = responseData.message || 'Registration completed successfully'; if (responseData.employeeId) { employeeId.textContent = `Your Employee ID is: ${responseData.employeeId}`; employeeId.hidden = false; } form.hidden = true; success.classList.add('visible'); success.focus(); } catch (error) { showSubmissionError(error.message || 'We could not submit your registration. Please check your connection and try again.'); } finally { submitButton.disabled = false; submitButton.textContent = 'Register Employee'; } });
+      document.querySelector('#new-registration').addEventListener('click', resetView);
+      createProjects();
+    })();
+  </script>
+</body>
+</html>
+
