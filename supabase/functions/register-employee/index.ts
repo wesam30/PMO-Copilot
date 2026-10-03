@@ -45,6 +45,13 @@ Deno.serve(async request => {
     const url = Deno.env.get("SUPABASE_URL"), serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!url || !serviceKey) return json(request, 500, { success: false, message: "Service configuration error." });
     const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+    const [emailLookup, mobileLookup, whatsappLookup] = await Promise.all([
+      admin.from("employees").select("employee_id").eq("email", employeeEmail).maybeSingle(),
+      admin.from("employees").select("employee_id").or(`mobile.eq.${mobile},whatsapp.eq.${mobile}`).limit(1).maybeSingle(),
+      admin.from("employees").select("employee_id").or(`mobile.eq.${whatsapp},whatsapp.eq.${whatsapp}`).limit(1).maybeSingle(),
+    ]);
+    if (emailLookup.error || mobileLookup.error || whatsappLookup.error) return json(request, 500, { success: false, message: "Unable to verify duplicate employee details." });
+    if (emailLookup.data || mobileLookup.data || whatsappLookup.data) return json(request, 409, { success: false, message: "An employee with this email or phone number already exists." });
     const randomPassword = crypto.randomUUID() + crypto.randomUUID();
     const { data: authData, error: authError } = await admin.auth.admin.createUser({ email: employeeEmail, password: randomPassword, email_confirm: true, user_metadata: { employee_name: employeeName } });
     if (authError || !authData.user) return json(request, 409, { success: false, message: "Employee already exists." });

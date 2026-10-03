@@ -10,7 +10,8 @@ const state={me:null,employees:[],projects:[],assignments:[],updates:[],workStat
 const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 const label=value=>String(value??'').replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
 const initials=name=>String(name||'PM').split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase();
-const monday=()=>{const d=new Date();const day=d.getDay()||7;d.setDate(d.getDate()-day+1);return d.toISOString().slice(0,10)};
+const localDateString=date=>{const year=date.getFullYear(),month=String(date.getMonth()+1).padStart(2,'0'),day=String(date.getDate()).padStart(2,'0');return `${year}-${month}-${day}`};
+const monday=()=>{const date=new Date();date.setHours(12,0,0,0);const day=date.getDay();date.setDate(date.getDate()-(day===0?6:day-1));return localDateString(date)};
 const statusPill=(value,text)=>`<span class="pill ${esc(value)}">${esc(text||label(value))}</span>`;
 const show=(id,on=true)=>$(id)?.classList.toggle('hidden',!on);
 const currentAssignment=projectId=>state.assignments.find(item=>item.project_id===projectId&&item.active);
@@ -175,7 +176,7 @@ async function submitUpdate(){
   const button=$('submit-update'),intervention=$('update-intervention').value.trim(),managerEmail=$('update-manager-email').value.trim();
   if(managerEmail&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(managerEmail)){message('Enter a valid direct manager email or leave it blank.');return}
   button.disabled=true;button.textContent='Saving update…';
-  const {data:update,error}=await sb.rpc('submit_project_update',{p_project_id:$('update-project').value,p_week_start:monday(),p_planned_percent:Number($('update-planned').value),p_actual_percent:Number($('update-actual').value),p_project_status:$('update-status').value,p_challenge:$('update-challenge').value,p_risk:$('update-risk').value,p_priority:$('update-priority').value,p_next_action:$('update-next').value,p_target_date:$('update-target').value||null,p_manager_intervention_required:Boolean(intervention),p_manager_intervention_details:intervention||null,p_completed_exception:$('update-exception').value||null});
+  const {data:update,error}=await sb.rpc('submit_project_update',{p_project_id:$('update-project').value,p_week_start:$('update-week').value,p_planned_percent:Number($('update-planned').value),p_actual_percent:Number($('update-actual').value),p_project_status:$('update-status').value,p_challenge:$('update-challenge').value,p_risk:$('update-risk').value,p_priority:$('update-priority').value,p_next_action:$('update-next').value,p_target_date:$('update-target').value||null,p_manager_intervention_required:Boolean(intervention),p_manager_intervention_details:intervention||null,p_completed_exception:$('update-exception').value||null});
   if(error){message(error.message);button.disabled=false;button.textContent='Submit update & send report';return}
   const updateId=update?.update_id||update?.[0]?.update_id;
   await sendWeeklyReport(updateId,managerEmail,button);

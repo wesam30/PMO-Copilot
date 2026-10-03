@@ -14,3 +14,4 @@ dialog{border:0;padding:0;background:transparent;max-width:none}dialog::backdrop
 @media print{.topbar,.sidebar,.page-head button,.report-toolbar,#global-message{display:none!important}.portal{display:block}.content{padding:0}.portal-view{display:none!important}[data-view-panel="reports"]{display:block!important}.card{box-shadow:none;border-color:#bbb}.report-note{display:none}}
 .pill.not_required{background:#eef2f7;color:#52647a}
 @media(max-width:680px){.logout-button{display:block;padding:8px 10px;font-size:12px}.user-chip{display:none}}
+.metric small{white-space:nowrap}.metric strong{overflow-wrap:normal;word-break:keep-all;white-space:nowrap}
