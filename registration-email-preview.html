@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PMO Copilot Registration Email Preview</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;padding:42px 18px;background:#eef3f9;color:#172b44;font-family:Arial,"Segoe UI",sans-serif}
+    .email{width:min(100%,680px);margin:auto;background:#fff;border:1px solid #dce5ef;border-radius:18px;overflow:hidden;box-shadow:0 20px 55px rgba(11,37,69,.12)}
+    .header{padding:30px 38px;background:linear-gradient(120deg,#0b2545,#1467d9);color:#fff}
+    .brand{display:flex;align-items:center;gap:12px;font-size:25px;font-weight:800}
+    .mark{width:31px;height:31px;border-radius:8px;background:linear-gradient(90deg,#1f74e8 0 72%,#f0b51a 72% 100%);box-shadow:0 6px 14px rgba(0,0,0,.2)}
+    .body{padding:38px}
+    .success{display:inline-block;margin-bottom:16px;padding:7px 12px;border-radius:999px;background:#e9f8f0;color:#14804f;font-size:13px;font-weight:700}
+    h1{margin:0 0 14px;color:#0b2545;font-size:30px;line-height:1.2}
+    p{margin:0 0 18px;color:#52657b;font-size:16px;line-height:1.6}
+    .id-card{margin:24px 0;padding:22px;border:1px solid #cfdceb;border-radius:12px;background:#f7faff;text-align:center}
+    .id-card span{display:block;margin-bottom:6px;color:#62758a;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+    .id-card strong{color:#1467d9;font-size:27px;letter-spacing:.04em}
+    .button{display:block;width:100%;margin:22px 0;padding:15px 20px;border-radius:9px;background:#1467d9;color:#fff;text-align:center;text-decoration:none;font-size:16px;font-weight:800}
+    .notice{margin-top:24px;padding:16px 18px;border-left:4px solid #f0b51a;border-radius:6px;background:#fff9e8;color:#5a4a1d;font-size:14px;line-height:1.55}
+    .footer{padding:21px 38px;border-top:1px solid #e4ebf2;background:#f8fafc;color:#718096;font-size:12px;line-height:1.55}
+    @media(max-width:560px){body{padding:18px 10px}.header,.body,.footer{padding-left:22px;padding-right:22px}h1{font-size:25px}.id-card strong{font-size:23px}}
+  </style>
+</head>
+<body>
+  <main class="email">
+    <header class="header"><div class="brand"><span class="mark"></span>PMO Copilot</div></header>
+    <section class="body">
+      <span class="success">Registration successful</span>
+      <h1>Welcome to PMO Copilot</h1>
+      <p>Hello Demo Employee,</p>
+      <p>Your registration details and project information were received successfully. Keep the Employee ID below—it will be used to sign in after your account is approved.</p>
+      <div class="id-card"><span>Your Employee ID</span><strong>PMO-2026-0001</strong></div>
+      <a class="button" href="#" aria-label="Preview only">Create your password</a>
+      <div class="notice"><strong>What happens next?</strong><br>Your account is pending PMO administrator review. You can create your password now, and access will become available after your role and assigned projects are approved.</div>
+    </section>
+    <footer class="footer">This portfolio preview uses illustrative data only. The live message contains a secure, one-time password link.</footer>
+  </main>
+</body>
+</html>

@@ -1,60 +1,281 @@
-# PMO Copilot — Phase 2 Admin Portal MVP
+# PMO Copilot
+
+### An AI-assisted platform for structured project updates, portfolio visibility, and smarter PMO operations
+
+PMO Copilot is a working MVP that explores how Project Management Offices can combine structured operational data, workflow automation, secure role-based access, and AI-assisted product development to improve the speed and quality of project reporting.
+
+## Product Preview
+
+### Welcome and access
+
+![PMO Copilot welcome page](docs/screenshots/welcome-portal.png)
+
+### Employee onboarding
+
+![PMO Copilot employee registration portal](docs/screenshots/registration-portal.png)
+
+### Engineer dashboard
+
+![PMO Copilot engineer dashboard with illustrative data](docs/screenshots/engineer-dashboard.png)
+
+### Weekly performance email
+
+![PMO Copilot weekly performance email with illustrative data](docs/screenshots/weekly-email-report.png)
+
+### Registration and password email
+
+![PMO Copilot registration email with illustrative data](docs/screenshots/registration-email.png)
+
+All screenshots use illustrative data only. No real employee names, email addresses, phone numbers, or project records are shown.
+
+## Why I Built It
+
+The project began with a practical PMO question:
+
+> What if project information were collected correctly at the source instead of being reconstructed manually before every report?
+
+In many organizations, project information is distributed across spreadsheets, emails, messages, and individual follow-ups. Engineers may report progress in different formats, project ownership may not always be clear, and management reports can require considerable manual consolidation.
+
+This creates several business challenges:
+
+- Repeated manual follow-up with project teams
+- Inconsistent weekly status information
+- Limited visibility into planned versus actual progress
+- Difficulty identifying risks early
+- Duplicate or disconnected employee and project records
+- Time-consuming preparation of management reports
+- Limited traceability of approvals and historical changes
+
+PMO Copilot was conceived as a practical response to this problem: a single operational flow connecting employees, projects, weekly updates, risks, approvals, dashboards, and management communication.
+
+## The Product Vision
+
+The long-term vision is not simply to build a registration form or automate an email.
+
+PMO Copilot is intended to become a decision-support layer for the PMO:
+
+- Operational data is entered once in a structured format.
+- Project responsibility is clearly assigned.
+- Employees see only the information relevant to their work.
+- Risks and delays are highlighted early.
+- Reports are generated consistently.
+- Management receives clearer portfolio visibility.
+- AI helps the PMO focus on exceptions that require human judgment.
+
+## From Idea to Working MVP
+
+### 1. Defining the workflow
+
+The first version focused on one-time employee registration. Employee details and assigned projects would later support automated reminders, project update requests, and PMO communications.
+
+The registration experience was designed as a responsive enterprise interface with validation and dynamically generated project fields.
+
+### 2. Testing the automation concept
+
+The first working proof of concept used:
+
+- n8n for workflow automation
+- Google Sheets for employee and project records
+- Docker for the local n8n environment
+- ngrok for temporary webhook access
+- Gmail SMTP for registration communication
+
+This phase proved that the end-to-end business process could work and provided valuable experience in workflow logic, webhooks, routing, data transformation, and automated communication.
+
+### 3. Improving the data model
+
+The initial spreadsheet approach revealed an important design issue: employee information and project information should not remain in one repeated flat structure.
+
+The data model was redesigned to separate employees, projects, assignments, and weekly updates while preserving stable Employee IDs and Project IDs. New records receive automatically generated IDs from the database rather than relying on manual numbering.
+
+Historical records were reviewed, cleaned, migrated, and validated before the next phase was built.
+
+### 4. Moving to Supabase
+
+As the concept expanded, the application needed a more reliable backend than a locally running workflow.
+
+The core system was migrated to Supabase:
+
+- PostgreSQL became the system of record.
+- Supabase Auth handled user accounts and password creation.
+- Row-Level Security controlled access to business data.
+- Edge Functions handled registration, login support, administrative actions, and email delivery.
+- Database constraints protected project ownership and weekly-update rules.
+
+This removed the production dependency on locally running Docker, ngrok, and n8n while retaining the original automation work as a learning and recovery artifact.
+
+### 5. Building the role-based portal
+
+The solution then evolved into a portal for three user roles:
+
+- **Engineer:** views assigned projects and submits weekly updates.
+- **Manager:** reviews broader project and portfolio performance.
+- **Admin:** approves accounts, assigns roles, confirms projects, manages access, and prepares reports.
+
+Account status, employee availability, and project status were deliberately separated because they represent different business concepts.
+
+### 6. Structuring weekly project updates
+
+Each project update can include:
+
+- Planned progress
+- Actual progress
+- Automatically calculated variance
+- Project status
+- Priority
+- Key challenge
+- Risk
+- Next action
+- Target date
+- Manager-intervention requirements
+
+The system maintains one current official update per project and reporting week while preserving previous versions for traceability.
+
+### 7. Automating project communication
+
+When an engineer submits an update:
+
+- The update is saved in the database.
+- The engineer dashboard is refreshed.
+- Weekly compliance is recalculated.
+- A branded HTML performance report is generated.
+- The PMO coordinator receives the report automatically.
+- A direct manager can optionally receive it while the PMO coordinator remains copied.
+
+## What the MVP Currently Includes
+
+- Responsive employee registration
+- Egyptian mobile-number validation
+- Automatic Employee ID and Project ID generation
+- Secure password-creation flow
+- Employee ID and password sign-in
+- Pending account approval
+- Engineer, Manager, and Admin roles
+- Project assignment management
+- One responsible engineer per project
+- Engineer-specific project visibility
+- Structured weekly updates
+- Planned-versus-actual variance
+- Risk and intervention tracking
+- Weekly submission compliance
+- Project-health dashboards
+- Branded HTML email reports
+- Portfolio reporting foundations
+- Audit and communication logs
+- CSV and print/PDF reporting options
+- Responsive layouts for desktop, tablet, and mobile
 
 ## Architecture
 
-- Static browser UI uses only Supabase's publishable key; no service-role key is committed or exposed.
-- `register-employee` validates and normalizes Egyptian mobile numbers, creates a pending Auth account, registers employee and project details through `register_employee`, links the Auth UUID, and sends a Gmail-backed set-password link with the Employee ID.
-- `portal.html` opens the production-style admin portal in `admin-portal.html`, with responsive styles in `portal.css` and behavior in `portal.js`.
-- The admin portal separates account access, workforce availability, and project delivery status into different tabs and data fields.
-- PostgreSQL RLS permits business-data access only to active accounts. Roles are separate from `job_title`: `engineer`, `manager`, `admin`.
-- `project_assignments` maintains assignment history and enforces one active responsible engineer per project.
-- `project_updates` keeps weekly versions; one current official update per project/week; its computed `variance` is `actual_percent - planned_percent`.
-- `employee_work_status` is the future HR integration boundary. It stores leave type, reason, and expected return date without mixing those fields with login access.
-- `admin_audit_log` records access, role, project-assignment, and workforce-status decisions.
-- `communication_log` records approval, weekly-update, and portfolio-report email delivery outcomes.
-- `admin-actions` is an authenticated Edge Function for approvals, project-change notifications, automatic weekly update delivery, and on-demand portfolio report email.
+```mermaid
+flowchart LR
+    A[Employee Registration] --> B[Supabase Auth]
+    A --> C[(PostgreSQL)]
+    D[Admin Approval] --> C
+    B --> E[Role-Based Portal]
+    C --> E
+    E --> F[Weekly Project Update]
+    F --> C
+    F --> G[Supabase Edge Function]
+    G --> H[Branded Email Report]
+    C --> I[PMO and Management Dashboards]
+```
 
-## Supabase Free Plan scope
+## Core Data Foundation
 
-This MVP uses Postgres, Auth, and three operational Edge Functions only. It does not use Storage, Realtime, cron, queues, or file attachments. Dashboard and report queries run on demand rather than polling.
+The current model separates:
 
-## Manual administrator bootstrap (required)
+- Employees
+- Projects
+- Project assignments
+- Weekly project updates
+- Employee work status
+- Administrative audit events
+- Communication delivery records
 
-Choose and activate the first trusted administrator directly in Supabase after deployment. Later approvals, account-status changes, roles, assignments, employee availability, and reports are handled through the portal.
+This separation provides a stronger foundation for future approval stages, job specialties, HR integration, and portfolio analytics.
 
-## Deployment notes
+## Key Product Decisions
 
-1. Keep the existing personal Gmail SMTP configuration private; do not replace the sender until separately approved.
-2. Apply the Phase 2 migrations followed by the admin portal and grant-hardening migrations when reproducing the database.
-3. Keep database exports, operational snapshots, and employee data outside this repository.
-4. Configure Edge Function secrets in Supabase; never commit SMTP credentials or service-role keys.
+- Job title is separate from application access role.
+- Creating a password does not automatically activate an account.
+- An administrator reviews roles and projects before activation.
+- One engineer per project is the starting business rule.
+- Project assignments retain history.
+- Weekly updates retain previous versions.
+- Engineers see only their authorized projects.
+- PMO visibility is mandatory for every submitted update.
+- HR availability remains a future integration boundary.
+- The MVP stays within the Supabase Free Plan.
 
-## Test checklist
+## Validation Completed
 
-- Registration sends a pending account and set-password email.
-- Pending, inactive, and rejected accounts are denied business data.
-- An admin can activate a role and create a single active project assignment.
-- An engineer submits an assigned-project weekly update; duplicate current week submissions create a versioned replacement.
-- The PMO coordinator receives every submitted weekly update automatically. When a direct manager email is supplied, the manager is the recipient and the coordinator is copied.
-- Weekly update email uses the PMO Copilot dashboard template with fixed KPI cards, planned/actual/variance percentages, a project-status table, and detailed challenge, risk, action, and intervention fields.
-- Manager and admin RLS views show portfolio data; engineers see only assigned projects and their own update history.
-- Imported employee rows without an Auth account cannot be activated.
-- Admin approval updates access and responsible projects atomically and records an audit event.
-- Approval/project-change email failure does not roll back the approved database decision; delivery is recorded for retry.
-- Reports can be printed/saved as PDF, downloaded as CSV, or emailed from the Reports tab.
+The MVP was tested through a real end-to-end scenario:
 
-## MVP completion gate
+- An engineer account was created and approved.
+- A project was assigned to the engineer.
+- The engineer signed in successfully.
+- A structured weekly update was submitted.
+- Planned and actual progress were saved correctly.
+- Dashboard compliance and project-health indicators changed automatically.
+- The project appeared as at risk with the correct progress.
+- The branded HTML report was received successfully by email.
+- The final source was reviewed for exposed secrets before publication.
 
-The implementation is ready for final acceptance when these two user-driven checks pass:
+## How AI Was Used
 
-1. Sign in with the approved engineer test account, submit one update for the demo project, and confirm the coordinator receives the branded HTML report.
-2. Sign in as the administrator, verify the update appears in project reporting, and send one portfolio report to the administrator's own email.
+ChatGPT and Codex were used as collaborative product-development tools throughout the project for:
 
-After acceptance, publish the static frontend and push the approved source to GitHub. Local `127.0.0.1` links are development previews only and are not a public deployment.
+- Business-problem exploration
+- Requirement refinement
+- Workflow design
+- UI/UX iteration
+- Architecture discussions
+- Code generation and revision
+- Debugging and testing
+- Security and data-quality reviews
+- Documentation
 
-## Decision log
+The business rules, prioritization, product direction, trade-offs, approvals, and acceptance decisions remained human-led.
 
-- Preserved stable Employee and Project IDs and did not migrate data to a new identity table.
-- Used `access_role` independently of job title, specialty, and future review stage to support later workflow expansion.
-- Chose database constraints and RLS for ownership/approval rules so the browser remains a thin client.
-- Kept the implementation within the Supabase Free Plan; no paid services were enabled.
+This is an intentional part of the project:
+
+> PMO professionals do not need to replace their experience with AI. They can combine domain knowledge with AI to prototype faster, test ideas earlier, improve consistency, and build more capable operational solutions.
+
+## Current Status
+
+The working MVP, Supabase backend, Edge Functions, database migrations, and source code are available in this repository.
+
+The repository includes a GitHub Pages preview backed by Supabase. Before production use, the final public origin and authentication redirect URLs should be verified and restricted to the deployed site.
+
+## Roadmap
+
+Future development may include:
+
+- Production deployment hardening and custom-domain readiness
+- Project-manager review and approval
+- Top-management reporting and approval
+- Role-specific update requirements
+- Engineering specialties and job grades
+- HR-owned availability integration
+- Portfolio trends and historical analytics
+- AI-generated management summaries
+- Exception detection and recommended actions
+- Expanded notification channels
+- Production email branding
+
+## What This Project Demonstrates
+
+PMO Copilot demonstrates the intersection of:
+
+- Project Management Office operations
+- Business analysis
+- Process improvement
+- Data modeling
+- Workflow automation
+- Product thinking
+- UI/UX design
+- Secure application architecture
+- AI-assisted development
+
+It is both a working product prototype and a continuing learning journey toward using AI to transform project-management operations.
