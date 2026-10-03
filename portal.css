@@ -15,3 +15,4 @@ dialog{border:0;padding:0;background:transparent;max-width:none}dialog::backdrop
 .pill.not_required{background:#eef2f7;color:#52647a}
 @media(max-width:680px){.logout-button{display:block;padding:8px 10px;font-size:12px}.user-chip{display:none}}
 .metric small{white-space:nowrap}.metric strong{overflow-wrap:normal;word-break:keep-all;white-space:nowrap}
+@media(max-width:680px){.metric small{white-space:normal}.metric strong{white-space:normal}}
