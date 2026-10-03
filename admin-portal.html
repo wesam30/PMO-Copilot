@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PMO Copilot Portal</title>
+  <link rel="stylesheet" href="portal.css?v=10">
+</head>
+<body>
+  <main id="auth-shell">
+    <section id="landing" class="auth-page"><div class="auth-card">
+      <div class="wordmark"><span class="brand-mark"></span>PMO Copilot</div>
+      <h1>Welcome</h1><p class="auth-intro">Choose how you would like to continue.</p>
+      <div class="auth-actions"><button id="show-login">Existing Employee — Sign In</button><a class="button-link secondary" href="index.html">New Employee — Register</a></div>
+    </div></section>
+    <section id="login" class="auth-page hidden"><div class="auth-card">
+      <div class="wordmark"><span class="brand-mark"></span>PMO Copilot</div>
+      <h1>Sign in</h1><p class="auth-intro">Use the Employee ID issued during registration and your password.</p>
+      <label class="field-label" for="employee-id">Employee ID</label><input id="employee-id" placeholder="PMO-2026-0001" autocomplete="username">
+      <label class="field-label" for="password">Password</label><div class="password-wrap"><input id="password" type="password" autocomplete="current-password"><button class="toggle-password" type="button" data-toggle="password">Show</button></div>
+      <div class="auth-actions"><button id="sign-in">Sign in</button><button class="secondary" id="forgot">Forgot password?</button></div>
+      <div class="recovery-panel hidden" id="recovery-panel"><label class="field-label" for="recovery-email">Work email</label><input id="recovery-email" type="email" autocomplete="email" placeholder="name@company.com"><button id="send-recovery" type="button">Send password reset link</button></div>
+      <p id="login-message" class="notice hidden"></p><button class="auth-back" id="back-login" type="button">← Back</button>
+    </div></section>
+    <section id="create-password" class="auth-page hidden"><div class="auth-card">
+      <div class="wordmark"><span class="brand-mark"></span>PMO Copilot</div>
+      <h1>Create your password</h1><p class="auth-intro" id="password-welcome">Set a password to complete your account setup.</p><p class="helper" id="password-employee-id" hidden></p>
+      <label class="field-label" for="new-password">New password</label><div class="password-wrap"><input id="new-password" type="password" autocomplete="new-password"><button class="toggle-password" type="button" data-toggle="new-password">Show</button></div><p class="strength" id="password-strength">Use at least 8 characters, including a number and a symbol.</p>
+      <label class="field-label" for="confirm-password">Confirm password</label><div class="password-wrap"><input id="confirm-password" type="password" autocomplete="new-password"><button class="toggle-password" type="button" data-toggle="confirm-password">Show</button></div>
+      <button id="create-password-submit" type="button">Create password &amp; continue</button><p id="password-message" class="notice hidden"></p><button class="auth-back" id="back-create-password" type="button">← Back to sign in</button>
+    </div></section>
+    <section id="pending" class="auth-page hidden"><div class="auth-card wide-auth">
+      <div class="wordmark"><span class="brand-mark"></span>PMO Copilot</div><h1>Account pending approval</h1><p class="auth-intro">Your account is awaiting PMO administrator approval. Project and workforce data remain unavailable until access is activated.</p><button class="auth-back" id="back-pending" type="button">← Back</button>
+    </div></section>
+  </main>
+
+  <div id="portal" class="portal hidden">
+    <header class="topbar">
+      <div class="wordmark portal-wordmark"><span class="brand-mark"></span>PMO Copilot</div>
+      <div class="top-actions"><button class="icon-button" aria-label="Notifications">●</button><div class="user-chip"><span class="avatar" id="admin-avatar">WR</span><span><strong id="header-name">Wesam Refaat</strong><small id="header-role">Administrator</small></span></div><button class="logout-button" id="logout">Log out</button></div>
+    </header>
+    <aside class="sidebar" aria-label="Portal navigation">
+      <button class="nav-item active" data-view="overview"><span>⌂</span>Overview</button>
+      <button class="nav-item" data-view="weekly"><span>✎</span>Weekly Update</button>
+      <button class="nav-item" data-view="approvals"><span>▣</span>Approval Requests <b class="nav-badge" id="approval-badge">0</b></button>
+      <button class="nav-item" data-view="accounts"><span>♙</span>Accounts</button>
+      <button class="nav-item" data-view="employees"><span>♟</span>Employees</button>
+      <button class="nav-item" data-view="projects"><span>▱</span>Projects</button>
+      <button class="nav-item" data-view="reports"><span>▥</span>Reports</button>
+      <div class="sidebar-note"><strong>PMO Copilot</strong><small>Secure, role-based project workspace.</small></div>
+    </aside>
+    <main class="content">
+      <div id="global-message" class="notice hidden"></div>
+      <section class="portal-view" data-view-panel="overview"><div class="page-head"><div><h1>Overview</h1><p>Account, workforce, and project health at a glance.</p></div><button class="secondary" data-open-view="reports">Create portfolio report</button></div><div id="overview-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="approvals"><div class="page-head"><div><h1>Approval Requests</h1><p>Review employee details, assignments, and access before activation.</p></div></div><div id="approval-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="accounts"><div class="page-head"><div><h1>Accounts</h1><p>Account access is kept separate from employee availability and project health.</p></div></div><div id="accounts-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="employees"><div class="page-head"><div><h1>Employees</h1><p>Availability and update compliance for authorized PMO review.</p></div></div><div id="employees-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="projects"><div class="page-head"><div><h1>Projects</h1><p>Responsible engineer, latest update, and delivery status.</p></div></div><div id="projects-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="reports"><div class="page-head"><div><h1>Reports</h1><p>Build an on-demand portfolio report and share it with a manager.</p></div></div><div id="reports-content"></div></section>
+      <section class="portal-view hidden" data-view-panel="weekly"><div class="page-head"><div><h1>Weekly Update</h1><p>Submit a structured update for an assigned project.</p></div></div><div id="weekly-content"></div></section>
+    </main>
+  </div>
+  <dialog id="review-dialog"><form method="dialog" class="dialog-card"><button class="dialog-close" value="cancel" aria-label="Close">×</button><div id="review-dialog-content"></div></form></dialog>
+  <dialog id="work-status-dialog"><form method="dialog" class="dialog-card"><button class="dialog-close" value="cancel" aria-label="Close">×</button><div id="work-status-dialog-content"></div></form></dialog>
+  <script type="module" src="portal.js?v=10"></script>
+</body>
+</html>

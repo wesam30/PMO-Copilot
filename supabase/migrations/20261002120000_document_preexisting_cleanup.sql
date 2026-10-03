@@ -1,0 +1,15 @@
+-- Historical migration record only — DO NOT APPLY to the current live project.
+--
+-- The following work was already completed manually in the live database on
+-- 2026-10-02 and is recorded here for repository history. It intentionally
+-- contains no DELETE, UPDATE, ALTER, or INSERT statements:
+--   * retained real employees PMO-2026-0001, PMO-2026-0007, PMO-2026-0010,
+--     and PMO-2026-0013, plus demo engineer PMO-2026-0002 and demo manager
+--     PMO-2026-0006;
+--   * reduced active data to 6 employees and 9 projects;
+--   * assigned all 9 projects through active project_assignments;
+--   * added employees.is_demo;
+--   * added Egyptian normalized-mobile validation and unique lower(email).
+--
+-- Pre-cleanup snapshots are in pmo_backup and reflect 13 employees, 19
+-- projects, 0 assignments, and 0 updates as of 2026-10-02.

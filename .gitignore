@@ -1,0 +1,23 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.local
+
+# Database exports and private operational records
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.bak
+*.zip
+supabase/backups/
+supabase/live-state/
+
+# Local tooling
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
+
