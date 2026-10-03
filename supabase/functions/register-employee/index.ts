@@ -53,7 +53,9 @@ Deno.serve(async request => {
     const employeeId = Array.isArray(registration) ? registration[0]?.employee_id : registration?.employee_id;
     const { error: linkError } = await admin.from("employees").update({ auth_user_id: authData.user.id, account_status: "pending" }).eq("employee_id", employeeId);
     if (linkError) return json(request, 500, { success: false, message: "Unable to link the new account." });
-    const { data: linkData, error: linkError2 } = await admin.auth.admin.generateLink({ type: "recovery", email: employeeEmail });
+    const publicOrigin = (Deno.env.get("ALLOWED_ORIGIN") || "").replace(/\/+$/, "");
+    if (!publicOrigin) return json(request, 500, { success: false, message: "Public portal URL is not configured." });
+    const { data: linkData, error: linkError2 } = await admin.auth.admin.generateLink({ type: "recovery", email: employeeEmail, options: { redirectTo: `${publicOrigin}/admin-portal.html` } });
     if (linkError2 || !linkData.properties?.action_link) return json(request, 500, { success: false, message: "Account created, but the password link could not be generated." });
     const actionLink = linkData.properties.action_link;
     const safeName = escapeHtml(employeeName), safeId = escapeHtml(employeeId);
