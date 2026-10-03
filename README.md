@@ -131,6 +131,8 @@ Each project update can include:
 
 The system maintains one current official update per project and reporting week while preserving previous versions for traceability.
 
+The reporting week starts on Sunday. The target submission time is Sunday at 10:00 AM Africa/Cairo; submissions remain available until and after 2:00 PM, with updates after 2:00 PM recorded as late rather than blocked.
+
 ### 7. Automating project communication
 
 When an engineer submits an update:

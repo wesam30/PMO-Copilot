@@ -11,7 +11,8 @@ const esc=value=>String(value??'').replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&
 const label=value=>String(value??'').replaceAll('_',' ').replace(/\b\w/g,char=>char.toUpperCase());
 const initials=name=>String(name||'PM').split(/\s+/).slice(0,2).map(part=>part[0]).join('').toUpperCase();
 const localDateString=date=>{const year=date.getFullYear(),month=String(date.getMonth()+1).padStart(2,'0'),day=String(date.getDate()).padStart(2,'0');return `${year}-${month}-${day}`};
-const monday=()=>{const date=new Date();date.setHours(12,0,0,0);const day=date.getDay();date.setDate(date.getDate()-(day===0?6:day-1));return localDateString(date)};
+const weekStart=()=>{const date=new Date();date.setHours(12,0,0,0);date.setDate(date.getDate()-date.getDay());return localDateString(date)};
+const monday=weekStart;
 const statusPill=(value,text)=>`<span class="pill ${esc(value)}">${esc(text||label(value))}</span>`;
 const show=(id,on=true)=>$(id)?.classList.toggle('hidden',!on);
 const currentAssignment=projectId=>state.assignments.find(item=>item.project_id===projectId&&item.active);
@@ -97,7 +98,7 @@ function employeeCompliance(employee){
   if(employee.account_status!=='active')return 'not_required';
   const work=workStatusFor(employee.employee_id);if(work.work_status==='on_leave')return 'on_leave';
   const projects=employeeProjects(employee.employee_id);if(!projects.length)return 'not_required';
-  const last=projects.map(project=>latestUpdate(project.project_id)?.week_start).filter(Boolean).sort().at(-1);return last&&last>=monday()?'regular':'overdue';
+  const updates=projects.map(project=>latestUpdate(project.project_id)).filter(Boolean).sort((a,b)=>String(b.week_start).localeCompare(String(a.week_start)));const last=updates[0];if(!last||last.week_start<weekStart())return 'overdue';return last.submission_state==='late'?'late':'regular';
 }
 function counts(){
   const account={pending:0,active:0,suspended:0,rejected:0};state.employees.forEach(item=>account[item.account_status]=(account[item.account_status]||0)+1);
