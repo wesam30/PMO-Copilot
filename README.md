@@ -4,6 +4,10 @@
 
 PMO Copilot is a working MVP that explores how Project Management Offices can combine structured operational data, workflow automation, secure role-based access, and AI-assisted product development to improve the speed and quality of project reporting.
 
+**[Open the live PMO Copilot portal](https://wesam30.github.io/PMO-Copilot/?release=96b8d7f)**
+
+The live portal is an MVP demonstration connected to the project backend. Use illustrative test data only.
+
 ## Product Preview
 
 ### Welcome and access

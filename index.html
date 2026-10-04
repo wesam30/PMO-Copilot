@@ -6,7 +6,8 @@
   <meta name="description" content="PMO Copilot secure employee and project portal">
   <title>PMO Copilot</title>
   <script>
-    const destination = `admin-portal.html${window.location.search}${window.location.hash}`;
+    const releaseQuery = window.location.search || '?release=96b8d7f';
+    const destination = `admin-portal.html${releaseQuery}${window.location.hash}`;
     window.location.replace(destination);
   </script>
 </head>
