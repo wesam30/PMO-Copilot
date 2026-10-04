@@ -28,6 +28,11 @@ function clearMessage(id='global-message'){const el=$(id);if(el)el.classList.add
 function clearCallbackUrl(){history.replaceState({},document.title,location.pathname)}
 function openAuthView(id){authViews.forEach(view=>show(view,view===id));show('portal',false);show('auth-shell',true);if(id==='login')$('employee-id')?.focus()}
 function passwordIsStrong(value){return value.length>=8&&/\d/.test(value)&&/[^\w\s]/.test(value)}
+function recoveryErrorMessage(error){
+  const details=`${error?.code||''} ${error?.message||''}`.toLowerCase();
+  if(error?.status===429||details.includes('rate limit'))return 'Too many reset requests. Please wait one hour, then try once. You can also use the latest reset email already sent.';
+  return 'Unable to send the reset email right now. Please wait a few minutes and try again.';
+}
 function callbackParams(){return {hash:new URLSearchParams(location.hash.replace(/^#/,'')),query:new URLSearchParams(location.search)}}
 function isPasswordCallback(){const {hash,query}=callbackParams();const type=hash.get('type')||query.get('type');return type==='recovery'||type==='invite'||Boolean(hash.get('access_token'))||Boolean(query.get('code'))||Boolean(hash.get('error'))}
 async function establishPasswordSession(){
@@ -54,7 +59,7 @@ $('sign-in').onclick=async()=>{
   }catch{message('Unable to sign in. Please try again.','error','login-message')}
 };
 $('forgot').onclick=()=>show('recovery-panel');
-$('send-recovery').onclick=async()=>{const email=$('recovery-email').value.trim();if(!email){message('Enter your work email address.','error','login-message');return}const button=$('send-recovery');button.disabled=true;button.textContent='Sending reset link…';const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:PUBLIC_PORTAL_URL});message(error?'Unable to send reset email. Please try again.':'If the account exists, a new reset link was sent. Use the latest email.',error?'error':'ok','login-message');button.disabled=false;button.textContent='Send password reset link'};
+$('send-recovery').onclick=async()=>{const email=$('recovery-email').value.trim();if(!email){message('Enter your work email address.','error','login-message');return}const button=$('send-recovery');button.disabled=true;button.textContent='Sending reset link…';const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:PUBLIC_PORTAL_URL});message(error?recoveryErrorMessage(error):'If the account exists, a new reset link was sent. Use the latest email.',error?'error':'ok','login-message');button.disabled=false;button.textContent='Send password reset link'};
 $('create-password-submit').onclick=async()=>{const password=$('new-password').value,confirm=$('confirm-password').value;if(!passwordIsStrong(password)){message('Use at least 8 characters, including a number and a symbol.','error','password-message');return}if(password!==confirm){message('Passwords do not match.','error','password-message');return}const button=$('create-password-submit');button.disabled=true;button.textContent='Saving password…';const {error}=await sb.auth.updateUser({password});if(error){message(error.message,'error','password-message');button.disabled=false;button.textContent='Create password & continue';return}message('Password created successfully.','ok','password-message');clearCallbackUrl();button.textContent='Continuing…';await load()};
 
 async function populateCreatePassword(){const {data:{user}}=await sb.auth.getUser();const name=user?.user_metadata?.employee_name||user?.user_metadata?.full_name;const employeeId=user?.user_metadata?.employee_id;if(name)$('password-welcome').textContent=`Welcome, ${name}. Create a secure password to continue.`;if(employeeId){$('password-employee-id').textContent=`Employee ID: ${employeeId}`;$('password-employee-id').hidden=false}}
