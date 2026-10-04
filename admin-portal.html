@@ -24,7 +24,7 @@
     </div></section>
     <section id="create-password" class="auth-page hidden"><div class="auth-card">
       <div class="wordmark"><span class="brand-mark"></span>PMO Copilot</div>
-      <h1>Create your password</h1><p class="auth-intro" id="password-welcome">Set a password to complete your account setup.</p><p class="helper" id="password-employee-id" hidden></p>
+      <h1 id="password-title">Create your password</h1><p class="auth-intro" id="password-welcome">Set a password to complete your account setup.</p><p class="helper" id="password-employee-id" hidden></p>
       <label class="field-label" for="new-password">New password</label><div class="password-wrap"><input id="new-password" type="password" autocomplete="new-password"><button class="toggle-password" type="button" data-toggle="new-password">Show</button></div><p class="strength" id="password-strength">Use at least 8 characters, including a number and a symbol.</p>
       <label class="field-label" for="confirm-password">Confirm password</label><div class="password-wrap"><input id="confirm-password" type="password" autocomplete="new-password"><button class="toggle-password" type="button" data-toggle="confirm-password">Show</button></div>
       <button id="create-password-submit" type="button">Create password &amp; continue</button><p id="password-message" class="notice hidden"></p><button class="auth-back" id="back-create-password" type="button">← Back to sign in</button>
@@ -62,6 +62,6 @@
   </div>
   <dialog id="review-dialog"><form method="dialog" class="dialog-card"><button class="dialog-close" value="cancel" aria-label="Close">×</button><div id="review-dialog-content"></div></form></dialog>
   <dialog id="work-status-dialog"><form method="dialog" class="dialog-card"><button class="dialog-close" value="cancel" aria-label="Close">×</button><div id="work-status-dialog-content"></div></form></dialog>
-  <script type="module" src="portal.js?v=11"></script>
+  <script type="module" src="portal.js?v=12"></script>
 </body>
 </html>

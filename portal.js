@@ -2,7 +2,8 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.95.0';
 
 const URL='https://ipapyfeuwcecjfkhkqfz.supabase.co';
 const KEY='sb_publishable_90sFNIyh6JvfADbDyPGWHg_pkJ4Bkd-';
-const sb=createClient(URL,KEY);
+const PUBLIC_PORTAL_URL='https://wesam30.github.io/PMO-Copilot/admin-portal.html';
+const sb=createClient(URL,KEY,{auth:{detectSessionInUrl:true,persistSession:true}});
 const $=id=>document.getElementById(id);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const authViews=['landing','login','create-password','pending'];
@@ -27,7 +28,14 @@ function clearMessage(id='global-message'){const el=$(id);if(el)el.classList.add
 function clearCallbackUrl(){history.replaceState({},document.title,location.pathname)}
 function openAuthView(id){authViews.forEach(view=>show(view,view===id));show('portal',false);show('auth-shell',true);if(id==='login')$('employee-id')?.focus()}
 function passwordIsStrong(value){return value.length>=8&&/\d/.test(value)&&/[^\w\s]/.test(value)}
-function isPasswordCallback(){const hash=new URLSearchParams(location.hash.replace(/^#/,''));const query=new URLSearchParams(location.search);const type=hash.get('type')||query.get('type');return type==='recovery'||type==='invite'||Boolean(hash.get('access_token'))||Boolean(query.get('code'))}
+function callbackParams(){return {hash:new URLSearchParams(location.hash.replace(/^#/,'')),query:new URLSearchParams(location.search)}}
+function isPasswordCallback(){const {hash,query}=callbackParams();const type=hash.get('type')||query.get('type');return type==='recovery'||type==='invite'||Boolean(hash.get('access_token'))||Boolean(query.get('code'))||Boolean(hash.get('error'))}
+async function establishPasswordSession(){
+  const {hash,query}=callbackParams(),code=query.get('code'),accessToken=hash.get('access_token'),refreshToken=hash.get('refresh_token');
+  if(code){const {data,error}=await sb.auth.exchangeCodeForSession(code);if(!error&&data.session)return data.session}
+  if(accessToken&&refreshToken){const {data,error}=await sb.auth.setSession({access_token:accessToken,refresh_token:refreshToken});if(!error&&data.session)return data.session}
+  const {data:{session}}=await sb.auth.getSession();return session;
+}
 
 $('show-login').onclick=()=>openAuthView('login');
 $('back-login').onclick=()=>openAuthView('landing');
@@ -46,11 +54,20 @@ $('sign-in').onclick=async()=>{
   }catch{message('Unable to sign in. Please try again.','error','login-message')}
 };
 $('forgot').onclick=()=>show('recovery-panel');
-$('send-recovery').onclick=async()=>{const email=$('recovery-email').value.trim();if(!email){message('Enter your work email address.','error','login-message');return}const redirectTo=`${location.origin}${location.pathname}`;const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});message(error?'Unable to send reset email.':'If the account exists, a reset link was sent.',error?'error':'ok','login-message')};
+$('send-recovery').onclick=async()=>{const email=$('recovery-email').value.trim();if(!email){message('Enter your work email address.','error','login-message');return}const button=$('send-recovery');button.disabled=true;button.textContent='Sending reset link…';const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:PUBLIC_PORTAL_URL});message(error?'Unable to send reset email. Please try again.':'If the account exists, a new reset link was sent. Use the latest email.',error?'error':'ok','login-message');button.disabled=false;button.textContent='Send password reset link'};
 $('create-password-submit').onclick=async()=>{const password=$('new-password').value,confirm=$('confirm-password').value;if(!passwordIsStrong(password)){message('Use at least 8 characters, including a number and a symbol.','error','password-message');return}if(password!==confirm){message('Passwords do not match.','error','password-message');return}const button=$('create-password-submit');button.disabled=true;button.textContent='Saving password…';const {error}=await sb.auth.updateUser({password});if(error){message(error.message,'error','password-message');button.disabled=false;button.textContent='Create password & continue';return}message('Password created successfully.','ok','password-message');clearCallbackUrl();button.textContent='Continuing…';await load()};
 
 async function populateCreatePassword(){const {data:{user}}=await sb.auth.getUser();const name=user?.user_metadata?.employee_name||user?.user_metadata?.full_name;const employeeId=user?.user_metadata?.employee_id;if(name)$('password-welcome').textContent=`Welcome, ${name}. Create a secure password to continue.`;if(employeeId){$('password-employee-id').textContent=`Employee ID: ${employeeId}`;$('password-employee-id').hidden=false}}
-async function handlePasswordCallback(){if(!isPasswordCallback())return false;const {data:{session}}=await sb.auth.getSession();if(!session){openAuthView('login');message('Your password link is invalid or has expired. Request a new reset link.','error','login-message');return true}await populateCreatePassword();openAuthView('create-password');return true}
+async function handlePasswordCallback(){
+  if(!isPasswordCallback())return false;
+  const {hash,query}=callbackParams(),callbackError=hash.get('error_description')||query.get('error_description');
+  if(callbackError){openAuthView('login');message(callbackError.replaceAll('+',' ')+' Request a new reset link.','error','login-message');return true}
+  const session=await establishPasswordSession();
+  if(!session){openAuthView('login');message('Your password link is invalid or has expired. Request a new reset link and use the latest email.','error','login-message');return true}
+  const type=hash.get('type')||query.get('type');
+  if(type==='recovery'){$('password-title').textContent='Set a new password';$('password-welcome').textContent='Choose a new secure password for your PMO Copilot account.';$('create-password-submit').textContent='Save new password & continue'}
+  await populateCreatePassword();openAuthView('create-password');return true;
+}
 
 async function load(){
   const {data:{user}}=await sb.auth.getUser(); if(!user){openAuthView('landing');return}
