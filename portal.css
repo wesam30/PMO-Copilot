@@ -18,3 +18,5 @@ dialog{border:0;padding:0;background:transparent;max-width:none}dialog::backdrop
 @media(max-width:680px){.metric small{white-space:normal}.metric strong{white-space:normal}}
 .pill.late{background:#fff5df;color:#9a6100}
 .metric-row.four{grid-template-columns:repeat(4,1fr)}
+.metric-row.four .metric small{display:flex;align-items:flex-end;justify-content:center;min-height:34px;font-size:14px;line-height:17px;white-space:normal;text-align:center}
+@media(max-width:680px){.metric-row.four .metric small{font-size:12px;line-height:15px;min-height:30px}}
