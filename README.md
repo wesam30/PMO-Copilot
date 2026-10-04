@@ -101,6 +101,7 @@ The core system was migrated to Supabase:
 - Row-Level Security controlled access to business data.
 - Edge Functions handled registration, login support, administrative actions, and email delivery.
 - Database constraints protected project ownership and weekly-update rules.
+- Imported employee records can be given secure portal access later without changing their existing Employee IDs, project history, or assignments.
 
 This removed the production dependency on locally running Docker, ngrok, and n8n while retaining the original automation work as a learning and recovery artifact.
 

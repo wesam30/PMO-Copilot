@@ -63,6 +63,45 @@ Deno.serve(async request=>{
       await admin.from("communication_log").insert({event_type:eventType,recipient_email:before.email,related_employee_id:employeeId,delivery_status:emailSent?"sent":"failed",error_message:emailError||null,initiated_by:actor.employee_id});
       return json(request,200,{success:true,emailSent,result});
     }
+    if(action==="invite_imported_employee"){
+      if(actor.access_role!=="admin")return json(request,403,{success:false,message:"Administrator access is required."});
+      const employeeId=clean(input.employeeId,40).toUpperCase(),accessRole=clean(input.role,20),note=clean(input.note,1000);
+      const projectIds=Array.isArray(input.projectIds)?[...new Set(input.projectIds.map((item:unknown)=>clean(item,40)).filter(Boolean))].slice(0,50):[];
+      if(!["engineer","manager","admin"].includes(accessRole))return json(request,400,{success:false,message:"Choose a valid access role."});
+      if(accessRole!=="engineer"&&projectIds.length)return json(request,400,{success:false,message:"Responsible projects can only be assigned to an engineer role."});
+      const {data:employee,error:employeeError}=await admin.from("employees").select("employee_id,employee_name,email,job_title,account_status,access_role,auth_user_id").eq("employee_id",employeeId).maybeSingle();
+      if(employeeError||!employee)return json(request,404,{success:false,message:"Employee not found."});
+      if(employee.auth_user_id)return json(request,409,{success:false,message:"This employee already has a sign-in account. Use Manage instead."});
+      if(!validEmail.test(employee.email))return json(request,400,{success:false,message:"A valid employee email is required before creating access."});
+
+      const randomPassword=crypto.randomUUID()+crypto.randomUUID();
+      const {data:authData,error:authError}=await admin.auth.admin.createUser({email:employee.email,password:randomPassword,email_confirm:true,user_metadata:{employee_name:employee.employee_name,employee_id:employee.employee_id}});
+      if(authError||!authData.user){
+        const duplicate=String(authError?.message||"").toLowerCase().includes("already")||String(authError?.message||"").toLowerCase().includes("registered");
+        return json(request,duplicate?409:500,{success:false,message:duplicate?"A sign-in account already exists for this email and needs account-linking review.":"Unable to create the sign-in account."});
+      }
+      const authUserId=authData.user.id;
+      const rollback=async()=>{await admin.from("employees").update({auth_user_id:null,account_status:employee.account_status,access_role:employee.access_role}).eq("employee_id",employeeId).eq("auth_user_id",authUserId);await admin.auth.admin.deleteUser(authUserId)};
+      const {data:linked,error:linkError}=await admin.from("employees").update({auth_user_id:authUserId,account_status:"pending"}).eq("employee_id",employeeId).is("auth_user_id",null).select("employee_id").maybeSingle();
+      if(linkError||!linked){await admin.auth.admin.deleteUser(authUserId);return json(request,409,{success:false,message:"Employee access changed while this invitation was being prepared. Refresh and try again."})}
+
+      const publicOrigin=(Deno.env.get("ALLOWED_ORIGIN")||"").replace(/\/+$/,"");
+      if(!publicOrigin){await rollback();return json(request,500,{success:false,message:"Public portal URL is not configured."})}
+      const {data:linkData,error:passwordLinkError}=await admin.auth.admin.generateLink({type:"recovery",email:employee.email,options:{redirectTo:`${publicOrigin}/admin-portal.html`}});
+      if(passwordLinkError||!linkData.properties?.action_link){await rollback();return json(request,500,{success:false,message:"Unable to generate the password setup link."})}
+
+      const {data:result,error:reviewError}=await caller.rpc("admin_review_employee",{p_employee_id:employeeId,p_account_status:"active",p_access_role:accessRole,p_project_ids:projectIds,p_change_note:note||"Account access created for an imported employee record."});
+      if(reviewError){await rollback();return json(request,400,{success:false,message:reviewError.message})}
+      const {data:projects}=projectIds.length?await admin.from("projects").select("project_name").in("project_id",projectIds):{data:[]};
+      const projectNames=(projects||[]).map(item=>item.project_name),actionLink=linkData.properties.action_link;
+      let emailSent=false,emailError="";
+      try{
+        const body=`<p style="font-size:16px;margin:0 0 18px">Hello ${escapeHtml(employee.employee_name)},</p><p>Your existing employee record is now connected to secure PMO Copilot access. Your Employee ID and project history have been preserved.</p><div style="margin:22px 0;padding:20px;border:1px solid #dce5f0;border-radius:12px;background:#fff;text-align:center"><span style="display:block;margin-bottom:6px;color:#65758b;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Employee ID</span><strong style="color:#1265e8;font-size:24px">${escapeHtml(employee.employee_id)}</strong></div><p><strong>Access role:</strong> ${escapeHtml(accessRole)}</p>${projectNames.length?`<p><strong>Responsible projects:</strong></p><ul>${projectNames.map(name=>`<li>${escapeHtml(name)}</li>`).join("")}</ul>`:"<p>No responsible projects are currently assigned.</p>"}${note?`<p><strong>PMO note:</strong> ${escapeHtml(note)}</p>`:""}<p style="margin:24px 0"><a href="${actionLink}" style="display:block;padding:14px 18px;border-radius:9px;background:#1265e8;color:#fff;text-align:center;text-decoration:none;font-weight:700">Create password &amp; open PMO Copilot</a></p><p style="color:#65758b;font-size:13px">For security, use the latest password email if you request another link.</p>`;
+        await smtpMail(employee.email,"PMO Copilot – Create your account password",emailShell("Your PMO Copilot access is ready","Existing employee account invitation",body),`Hello ${employee.employee_name},\n\nYour PMO Copilot access is ready.\nEmployee ID: ${employee.employee_id}\nAccess role: ${accessRole}\nProjects: ${projectNames.join(", ")||"None"}\n\nCreate your password: ${actionLink}`);emailSent=true;
+      }catch(error){emailError=error instanceof Error?error.message:"Email delivery failed."}
+      await admin.from("communication_log").insert({event_type:"account_approved",recipient_email:employee.email,related_employee_id:employeeId,delivery_status:emailSent?"sent":"failed",error_message:emailError||null,initiated_by:actor.employee_id});
+      return json(request,200,{success:true,emailSent,result});
+    }
     if(action==="send_weekly_update_report"){
       if(actor.access_role!=="engineer")return json(request,403,{success:false,message:"Engineer access is required."});
       const updateId=clean(input.updateId,80),directManagerEmail=clean(input.directManagerEmail,254).toLowerCase();
