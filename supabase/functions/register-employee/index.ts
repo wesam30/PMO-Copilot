@@ -8,6 +8,7 @@ const clean = (value: unknown, length: number) => typeof value === "string" ? va
 const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const date = /^\d{4}-\d{2}-\d{2}$/;
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" })[char] || char);
+const publicPortalUrl = () => clean(Deno.env.get("PUBLIC_PORTAL_URL"), 500) || "https://wesam30.github.io/PMO-Copilot/admin-portal.html";
 const normalizeEgyptianMobile = (value: unknown) => {
   const digits: Record<string, string> = { "٠":"0", "١":"1", "٢":"2", "٣":"3", "٤":"4", "٥":"5", "٦":"6", "٧":"7", "٨":"8", "٩":"9" };
   const normalized = clean(value, 40).replace(/[٠-٩]/g, digit => digits[digit]).replace(/[\s()\-]/g, "");
@@ -60,9 +61,7 @@ Deno.serve(async request => {
     const employeeId = Array.isArray(registration) ? registration[0]?.employee_id : registration?.employee_id;
     const { error: linkError } = await admin.from("employees").update({ auth_user_id: authData.user.id, account_status: "pending" }).eq("employee_id", employeeId);
     if (linkError) return json(request, 500, { success: false, message: "Unable to link the new account." });
-    const publicOrigin = (Deno.env.get("ALLOWED_ORIGIN") || "").replace(/\/+$/, "");
-    if (!publicOrigin) return json(request, 500, { success: false, message: "Public portal URL is not configured." });
-    const { data: linkData, error: linkError2 } = await admin.auth.admin.generateLink({ type: "recovery", email: employeeEmail, options: { redirectTo: `${publicOrigin}/admin-portal.html` } });
+    const { data: linkData, error: linkError2 } = await admin.auth.admin.generateLink({ type: "recovery", email: employeeEmail, options: { redirectTo: publicPortalUrl() } });
     if (linkError2 || !linkData.properties?.action_link) return json(request, 500, { success: false, message: "Account created, but the password link could not be generated." });
     const actionLink = linkData.properties.action_link;
     const safeName = escapeHtml(employeeName), safeId = escapeHtml(employeeId);

@@ -6,6 +6,7 @@ const json=(request:Request,status:number,body:Record<string,unknown>)=>new Resp
 const clean=(value:unknown,length:number)=>typeof value==="string"?value.trim().slice(0,length):"";
 const validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const escapeHtml=(value:unknown)=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"})[char]||char);
+const publicPortalUrl=()=>clean(Deno.env.get("PUBLIC_PORTAL_URL"),500)||"https://wesam30.github.io/PMO-Copilot/admin-portal.html";
 
 async function smtpMail(to:string,subject:string,html:string,text:string,cc?:string){
   const username=Deno.env.get("GMAIL_SMTP_USER")?.trim();
@@ -85,9 +86,7 @@ Deno.serve(async request=>{
       const {data:linked,error:linkError}=await admin.from("employees").update({auth_user_id:authUserId,account_status:"pending"}).eq("employee_id",employeeId).is("auth_user_id",null).select("employee_id").maybeSingle();
       if(linkError||!linked){await admin.auth.admin.deleteUser(authUserId);return json(request,409,{success:false,message:"Employee access changed while this invitation was being prepared. Refresh and try again."})}
 
-      const publicOrigin=(Deno.env.get("ALLOWED_ORIGIN")||"").replace(/\/+$/,"");
-      if(!publicOrigin){await rollback();return json(request,500,{success:false,message:"Public portal URL is not configured."})}
-      const {data:linkData,error:passwordLinkError}=await admin.auth.admin.generateLink({type:"recovery",email:employee.email,options:{redirectTo:`${publicOrigin}/admin-portal.html`}});
+      const {data:linkData,error:passwordLinkError}=await admin.auth.admin.generateLink({type:"recovery",email:employee.email,options:{redirectTo:publicPortalUrl()}});
       if(passwordLinkError||!linkData.properties?.action_link){await rollback();return json(request,500,{success:false,message:"Unable to generate the password setup link."})}
 
       const {data:result,error:reviewError}=await caller.rpc("admin_review_employee",{p_employee_id:employeeId,p_account_status:"active",p_access_role:accessRole,p_project_ids:projectIds,p_change_note:note||"Account access created for an imported employee record."});
